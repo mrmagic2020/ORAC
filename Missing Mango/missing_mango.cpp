@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-int main()
+int main() // PASSED
 {
   int Ix, Cx, Id, Cd, Io[2], Co[2], loc;
   ifstream inputFile("manin.txt");
