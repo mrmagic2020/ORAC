@@ -4,5 +4,6 @@
 # macOS
 .DS_Store
 
-# exclude unix executable files (all files without an extension)
-*
+# exclude unix executable files 
+alien
+missing_mango
