@@ -1,3 +1,8 @@
 .vscode
 *.dSYM
+
+# macOS
 .DS_Store
+
+# exclude unix executable files (all files without an extension)
+*
