@@ -2,6 +2,10 @@
 #include <fstream>
 using namespace std;
 
+/**
+ * @category Starter Set I: AIO problems
+ * @mrmagic2020
+*/
 int main() // PASSED
 {
   int Ix, Cx, Id, Cd, Io[2], Co[2], loc;
