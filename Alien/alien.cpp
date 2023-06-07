@@ -2,7 +2,13 @@
 #include <fstream>
 using namespace std;
 
-int main()
+/**
+ * AIO 2011 (Senior)
+ * @link https://orac2.info/problem/aio11aliens/
+ * 
+ * @mrmagic2020
+*/
+int main() // FAILED
 {
   const int MAX_HUMAN = 100000;
   const int MAX_WIDTH = 1000000;

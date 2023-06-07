@@ -4,9 +4,11 @@
 using namespace std;
 
 /**
+ * AIO 2022
+ * @link https://orac2.info/problem/aio22buildings/
+ * 
  * @mrmagic2020
 */
-
 int main() // PASSED
 {
   /**

@@ -3,7 +3,9 @@
 using namespace std;
 
 /**
- * @category Starter Set I: AIO problems
+ * Starter Set I: AIO problems
+ * @link https://orac2.info/problem/aio17mango/
+ * 
  * @mrmagic2020
 */
 int main() // PASSED
