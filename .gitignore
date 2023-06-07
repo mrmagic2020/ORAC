@@ -5,6 +5,6 @@
 .DS_Store
 
 # exclude unix executable files 
-alien
+Alien/alien
 missing_mango
 beautiful_buildings
