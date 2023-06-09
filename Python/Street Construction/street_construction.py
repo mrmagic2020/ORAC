@@ -1,6 +1,10 @@
 # PASSED
+#
+# Starter Set I: AIO Problems
+# @link https://orac2.info/problem/aio18street/
 
 from math import ceil
+
 
 inputFile = open("streetin.txt", "r")
 outputFile = open("streetout.txt", "w")
