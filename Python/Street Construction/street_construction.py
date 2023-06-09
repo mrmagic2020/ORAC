@@ -2,6 +2,7 @@
 #
 # Starter Set I: AIO Problems
 # @link https://orac2.info/problem/aio18street/
+# @author mrmagic2020
 
 from math import ceil
 

@@ -2,6 +2,7 @@
 #
 # Starter Problems
 # @link https://orac2.info/problem/simpleadd/
+# @author mrmagic2020
 
 inputFile = open("addin.txt", "r")
 outputFile = open("addout.txt", "w")
