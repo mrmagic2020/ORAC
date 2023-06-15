@@ -5,9 +5,10 @@
 .DS_Store
 
 # exclude unix executable files 
-Alien/alien
+C++/Alien/alien
 missing_mango
 beautiful_buildings
+C++/TSP/tsp
 
 # Python
 
