@@ -1,71 +1,120 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <queue>
+#include <unordered_set>
+#include <vector>
 
 using namespace std;
 
-struct Voter
-{
-    int vote, money;
-    Voter() : vote(0), money(0) {}
-    Voter(int vote, int money) : vote(vote), money(money) {}
-};
+int N, M, ans;
+vector<int> tmpCdd;
+unordered_set<int> cddCnt;
+vector<priority_queue<int, vector<int>, greater<int>>> votes;
 
-int N, M;
-vector<int> cnt;
-vector<Voter> votes;
-vector<vector<int>> record; // index is the candidate number
-
-bool sortByMoney(Voter a, Voter b)
+bool sortCdd(priority_queue<int, vector<int>, greater<int>> a,
+             priority_queue<int, vector<int>, greater<int>> b)
 {
-    return a.money < b.money;
+    return !a.empty() && (!b.empty() ? a.size() == b.size() ? a.top() < b.top() : a.size() > b.size() : true);
+}
+
+int getMaxVoted()
+{
+    int res = 0;
+    for (int i = 2; i <= N; i++)
+    {
+        res = max(res, (int)votes[i].size());
+    }
+    return res;
+}
+
+void printVotes()
+{
+    for (int i = 1; i <= N; i++)
+    {
+        printf("Votes for candidate %d: ", i);
+        auto cpy = votes[i];
+        while (!cpy.empty())
+        {
+            printf("%d ", cpy.top());
+            cpy.pop();
+        }
+        puts("");
+    }
 }
 
 int main()
 {
-    ifstream fin("dealin.txt");
-    fin >> N >> M;
-    cnt.resize(N + 1, 0);
-    votes.resize(M + 1);
-    record.resize(N + 1);
-    for (int i = 1; i <= M; i++)
+    ifstream in("dealin.txt");
+    in >> N >> M;
+    tmpCdd.resize(M + 1);
+    votes.resize(N + 1);
+    cddCnt.insert(1);
+    for (int i = 1, cdd; i <= M; i++)
     {
-        Voter v = Voter();
-        fin >> v.vote;
-        votes[i] = v;
-        cnt[v.vote]++;
-        cout << v.vote << " ";
+        in >> cdd;
+        tmpCdd[i] = cdd;
+        cddCnt.insert(cdd);
     }
-    cout << endl;
-    for (int i = 1; i <= M; i++)
+    for (int i = 1, cdd = 1, bribe; i <= M; i++)
     {
-        fin >> votes[i].money;
-        cout << votes[i].money << " ";
-    }
-    cout << endl;
-    fin.close();
-
-    // transform();
-    // print_record();
-
-    sort(votes.begin(), votes.end(), sortByMoney);
-
-    int ans = 0;
-    for (int i = 1; i <= M; i++)
-    {
-        if (votes[i].vote == 1) continue;
-        if (cnt[votes[i].vote] < cnt [1]) continue;
-
-        cnt[votes[i].vote]--;
-        cnt[1]++;
-        ans += votes[i].money;
-        printf("Transferring vote %d to 1 using $%d. %d votes for %d, %d votes for 1.\n", votes[i].vote, votes[i].money, cnt[votes[i].vote], votes[i].vote, cnt[1]);
+        in >> bribe;
+        votes[tmpCdd[i]].push(bribe);
     }
 
-    ofstream fout("dealout.txt");
-    fout << ans << endl;
-    fout.close();
-    
+    sort(votes.begin() + 2, votes.end(), sortCdd);
+    int idx = 2;
+    while (votes[1].size() <= getMaxVoted())
+    {
+        while (votes[idx].empty() && idx <= N) idx++;
+        if (idx > N) break;
+        ans += votes[idx].top();
+        votes[1].push(votes[idx].top());
+        votes[idx].pop();
+        sort(votes.begin() + 2, votes.end(), sortCdd);
+    }
+    // for (int i = 2; i <= N; i++)
+    // {
+    //     while (votes[i].size() >= votes[1].size())
+    //     {
+    //         ans += votes[i].top();
+    //         votes[1].push(votes[i].top());
+    //         votes[i].pop();
+    //     }
+    // }
+
+    // const int targetVotes = M / cddCnt.size() + 1;
+    // printf("Target votes: %d\n", targetVotes);
+    // for (int i = 2; i <= N; i++)
+    // {
+    //     printf("Inspecting voters for candidate %d.\n", i);
+    //     while (votes[i].size() >= targetVotes)
+    //     {
+    //         printf("Bribing voter for candidate %d with $%d.\n", i,
+    //                votes[i].top());
+    //         ans += votes[i].top();
+    //         votes[1].push(votes[i].top());
+    //         votes[i].pop();
+    //     }
+    // }
+    // if (votes[1].size() < targetVotes)
+    // {
+    //     sort(votes.begin() + 2, votes.end(), sortCdd);
+    //     printVotes();
+    //     int idx = 2;
+    //     while (votes[1].size() < targetVotes)
+    //     {
+    //         while (votes[idx].empty() && idx <= N) idx++;
+    //         if (idx > N) break;
+    //         votes[1].push(votes[idx].top());
+    //         ans += votes[idx].top();
+    //         printf("Spent an additional $%d at index %d. Voter 1 now has %zu
+    //         votes.\n", votes[idx].top(), idx, votes[1].size());
+    //         votes[idx].pop();
+    //     }
+    // }
+
+    ofstream out("dealout.txt");
+    out << ans << endl;
     return 0;
 }
