@@ -1,45 +1,35 @@
-#include <iostream>
+#include <algorithm>
 #include <fstream>
-using namespace std;
+#include <iostream>
 
-/**
- * AIO 2011 (Senior)
- * @link https://orac2.info/problem/aio11aliens/
- * 
- * @mrmagic2020
-*/
-int main() // FAILED
+using namespace std;
+const int MAXP = 1e6 + 6;
+
+int N, W, sum[MAXP], ans;
+
+int main()
 {
-  const int MAX_HUMAN = 100000;
-  const int MAX_WIDTH = 1000000;
-  int humans[MAX_HUMAN]; // elements array
-  int count; // iteration limit
-  int width; // addition
-  int beam_length;
-  ifstream inputFile("alienin.txt");
-  inputFile >> count >> width;
-  for (int i = 0; i < count; i++)
-  {
-    inputFile >> humans[i];
-  }
-  inputFile.close();
-  int final_beam = 0; // the maximum number of elements included
-  for (int i = 0; i < count; i++) // iterate through every element
-  {
-    const int limit = humans[i] + width;
-    int counter = 1; // the number of elements included in the following range. Initial count is 1 since the range is inclusive.
-    for (int j = (i + 1); j < count; j++) // interate through the remaining elements
+    ifstream in("alienin.txt");
+    in >> N >> W;
+    int maxp = 0;
+    for (int i = 1, p; i <= N; i++)
     {
-      if (humans[j] <= limit)
-      {
-        counter++;
-      }
+        in >> p;
+        sum[p + 1]++;
+        maxp = max(maxp, p);
     }
-    if (counter > final_beam)
-      final_beam = counter;
-  }
-  ofstream outputFile("alienout.txt");
-  outputFile << final_beam;
-  outputFile.close();
-  return 0;
+    in.close();
+    for (int i = 1; i <= MAXP - 1; i++)
+    {
+        sum[i] += sum[i - 1];
+    }
+    for (int i = W; i <= MAXP - 1; i++)
+    {
+        ans = max(ans, sum[i] - sum[i - W]);
+    }
+
+    ofstream out("alienout.txt");
+    out << ans << endl;
+    out.close();
+    return 0;
 }
