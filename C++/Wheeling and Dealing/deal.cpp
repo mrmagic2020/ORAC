@@ -1,120 +1,124 @@
 #include <algorithm>
+#include <climits>
 #include <fstream>
-#include <iostream>
 #include <queue>
-#include <unordered_set>
+#include <set>
+#include <utility>
 #include <vector>
 
 using namespace std;
+typedef pair<int, int> pii;
+#define x first   // Cost x to bribe
+#define y second  // Vote for candidate y
+#define rep(i, n) for (int i = 0; i < (n); i++)
 
-int N, M, ans;
-vector<int> tmpCdd;
-unordered_set<int> cddCnt;
-vector<priority_queue<int, vector<int>, greater<int>>> votes;
-
-bool sortCdd(priority_queue<int, vector<int>, greater<int>> a,
-             priority_queue<int, vector<int>, greater<int>> b)
-{
-    return !a.empty() && (!b.empty() ? a.size() == b.size() ? a.top() < b.top() : a.size() > b.size() : true);
-}
-
-int getMaxVoted()
-{
-    int res = 0;
-    for (int i = 2; i <= N; i++)
-    {
-        res = max(res, (int)votes[i].size());
-    }
-    return res;
-}
-
-void printVotes()
-{
-    for (int i = 1; i <= N; i++)
-    {
-        printf("Votes for candidate %d: ", i);
-        auto cpy = votes[i];
-        while (!cpy.empty())
-        {
-            printf("%d ", cpy.top());
-            cpy.pop();
-        }
-        puts("");
-    }
-}
+int N, M;
 
 int main()
 {
     ifstream in("dealin.txt");
-    in >> N >> M;
-    tmpCdd.resize(M + 1);
-    votes.resize(N + 1);
-    cddCnt.insert(1);
-    for (int i = 1, cdd; i <= M; i++)
-    {
-        in >> cdd;
-        tmpCdd[i] = cdd;
-        cddCnt.insert(cdd);
-    }
-    for (int i = 1, cdd = 1, bribe; i <= M; i++)
-    {
-        in >> bribe;
-        votes[tmpCdd[i]].push(bribe);
-    }
-
-    sort(votes.begin() + 2, votes.end(), sortCdd);
-    int idx = 2;
-    while (votes[1].size() <= getMaxVoted())
-    {
-        while (votes[idx].empty() && idx <= N) idx++;
-        if (idx > N) break;
-        ans += votes[idx].top();
-        votes[1].push(votes[idx].top());
-        votes[idx].pop();
-        sort(votes.begin() + 2, votes.end(), sortCdd);
-    }
-    // for (int i = 2; i <= N; i++)
-    // {
-    //     while (votes[i].size() >= votes[1].size())
-    //     {
-    //         ans += votes[i].top();
-    //         votes[1].push(votes[i].top());
-    //         votes[i].pop();
-    //     }
-    // }
-
-    // const int targetVotes = M / cddCnt.size() + 1;
-    // printf("Target votes: %d\n", targetVotes);
-    // for (int i = 2; i <= N; i++)
-    // {
-    //     printf("Inspecting voters for candidate %d.\n", i);
-    //     while (votes[i].size() >= targetVotes)
-    //     {
-    //         printf("Bribing voter for candidate %d with $%d.\n", i,
-    //                votes[i].top());
-    //         ans += votes[i].top();
-    //         votes[1].push(votes[i].top());
-    //         votes[i].pop();
-    //     }
-    // }
-    // if (votes[1].size() < targetVotes)
-    // {
-    //     sort(votes.begin() + 2, votes.end(), sortCdd);
-    //     printVotes();
-    //     int idx = 2;
-    //     while (votes[1].size() < targetVotes)
-    //     {
-    //         while (votes[idx].empty() && idx <= N) idx++;
-    //         if (idx > N) break;
-    //         votes[1].push(votes[idx].top());
-    //         ans += votes[idx].top();
-    //         printf("Spent an additional $%d at index %d. Voter 1 now has %zu
-    //         votes.\n", votes[idx].top(), idx, votes[1].size());
-    //         votes[idx].pop();
-    //     }
-    // }
-
     ofstream out("dealout.txt");
-    out << ans << endl;
+    in >> N >> M;
+    vector<pii> voters(M);
+    rep(i, M)
+    {
+        in >> voters[i].second;
+        voters[i].second--;  // zero-index the candidates
+    }
+    rep(i, M) in >> voters[i].first;
+    sort(voters.begin(), voters.end());  // sort voters by cost (first element)
+
+    // voters_for[i] stores voters_for voting for candidate i in increasing
+    // order of cost
+    vector<queue<int>> voters_for(N);
+    rep(i, M) voters_for[voters[i].second].push(i);
+
+    // sotres for each candidate (except candidate 1) the number of voters they
+    // have
+    // first - the number of votes
+    // second - the candidate id
+    set<pii> numvotes;
+    for (int i = 1; i < N; i++) numvotes.insert({voters_for[i].size(), i});
+
+    // Stores the number of voters bought off in step 1.
+    int numbought = 0;
+
+    // of the voters that haven't been bought off in step 1 yet:
+    // - payroll stores the minimum set of voters we need to win
+    // - pool stores the remaining voters we might want in the future
+    set<pii> payroll;
+    set<pii> pool;
+    rep(i, M) if (voters[i].second != 0) pool.insert({voters[i].first, i});
+
+    // Test every X.
+    int best = INT_MAX;
+    int step1cost = 0;
+    int step2cost = 0;
+    for (int X = M - 1; X >= 0; X--)
+    {
+        // Step 1 - buy off people until all candidates are at most X.
+
+        // repeatedly find the candidate with most votes, and but off their next
+        // cheapest member.
+        while (numvotes.rbegin()->first > X)
+        {
+            // obtain the cheapest voter for this candidate
+            int candidate = numvotes.rbegin()->second;
+            int to_buy = voters_for[candidate].front();
+            voters_for[candidate].pop();
+            int bribe_cost = voters[to_buy].first;
+
+            numbought++;
+            step1cost += bribe_cost;
+
+            // remove this person from the payroll/pool
+            pool.erase({bribe_cost, to_buy});
+            if (payroll.count({bribe_cost, to_buy}))
+            {
+                payroll.erase({bribe_cost, to_buy});
+                step2cost -= bribe_cost;
+            }
+
+            // reduce the size of this candidate by 1
+            pii el = *numvotes.rbegin();
+            numvotes.erase(el);
+            numvotes.insert({el.first - 1, el.second});
+        }
+
+        // Step 2 - work out which voters we should buy off to get candidate 1
+        // above X
+
+        int curr_votes = voters_for[0].size() + numbought;
+        int votes_required = max((X + 1) - curr_votes, 0);
+
+        // set is too small. move unbought voters from the pool into the
+        // payroll.
+        while (payroll.size() < votes_required)
+        {
+            // Note: it should never be possible for there to be no voters in
+            // the pool and for candidate 1 to still be losing.
+            int cheapest = pool.begin()->second;
+            pool.erase(pool.begin());
+            payroll.insert({voters[cheapest].first, cheapest});
+            step2cost += voters[cheapest].x;
+        }
+        // set is too large. move the most expansive voters back into the pool.
+        while (payroll.size() > votes_required)
+        {
+            // put them back into the pool
+            int most_expensive = payroll.rbegin()->second;
+            payroll.erase(prev(payroll.end()));
+            pool.insert({voters[most_expensive].first, most_expensive});
+            step2cost -= voters[most_expensive].first;
+        }
+
+        int total_cost = step1cost + step2cost;
+        best = min(best, total_cost);
+    }
+
+    out << best << endl;
+
+    in.close();
+    out.close();
     return 0;
 }
