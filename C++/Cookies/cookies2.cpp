@@ -43,7 +43,7 @@ int main()
             rate += c1;
             b1 = 1;
         }
-        if (!b2 && ans12 >= p2)
+        if (b1 && !b2 && ans12 >= p2)
         {
             ans12 -= p2;
             rate += c2;
@@ -60,7 +60,7 @@ int main()
             rate += c2;
             b2 = 1;
         }
-        if (!b1 && ans21 >= p1)
+        if (b2 && !b1 && ans21 >= p1)
         {
             ans21 -= p1;
             rate += c1;
