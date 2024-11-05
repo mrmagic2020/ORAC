@@ -1,0 +1,7 @@
+-std=c++17
+-Wall
+-Wextra
+-Wshadow
+-O2
+-fsanitize=address,undefined
+-g
